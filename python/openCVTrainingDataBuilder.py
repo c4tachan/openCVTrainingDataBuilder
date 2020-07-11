@@ -1,102 +1,62 @@
-import win32gui
-import win32ui
+import io
+import os
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-import io
 
 class charRect:
-    l = 0
-    t = 0
-    width = 60
-    height = 30
+    def __init__(self):
+        self.l = 0
+        self.t = 0
+        self.width = 60
+        self.height = 30
     
     def Right(self):
-        return self.l + width
+        return self.l + self.width
 
     def Bottom(self):
-        return self.t + height
+        return self.t + self.height
 
-def callback(font, tm, fonttype, names):
-    names.append(font.lfFaceName)
-    return True
+def drawFont(img, font, row):
+    draw = ImageDraw.Draw(im)
+    fnt = ImageFont.truetype(f".\\trainedFonts\\{font}", size=20)
 
-def drawFont(dc, fontName, row):
-    font = win32ui.CreateFont  ({ "height": 30    # Height
-                                ,  "width" : 60    # width
-                                ,  "name"  : fontName
-     })
-
-    dc.SelectObject(font)
-    rc = charRect
+    rc = charRect()
 
     rc.t = row * rc.height
 
-    for c in range(ord(' '), ord('~')):
-        dc.DrawText(chr(c), (rc.l, rc.t, rc.Right(rc), rc.Bottom(rc)), 0)
-        rc.l = rc.Right(rc)
+    # draw.text((0, rc.t), font, font=(ImageFont.truetype("arial", size=10)), align="left")
 
-    return dc
-
-
-def drawFontPil(img, font, row):
-    draw = ImageDraw.Draw(img)
-    fnt = ImageFont.truetype(font)
-
-    rc = charRect
-
-    rc.t = row * rc.height
-
-    for c in range(ord(' '), ord('~')):
-        draw.text((rc.l, rc.t, rc.Right(rc), rc.Bottom(rc)), chr(c), (0,0,0), fnt)
-        rc.l = rc.Right(rc)
+    for c in range(ord('!'), (ord('~') + 1)):
+        #draw.rectangle(((rc.l, rc.t), (rc.Right(), rc.Bottom())), fill="black")
+        draw.text((rc.l, rc.t), chr(c), font=fnt, align="center")
+        rc.l = rc.Right()
 
     return
 
 
 if __name__ == "__main__":
-    fontnames = []
-    basedc = win32ui.CreateDC()
-    dc = basedc.CreateCompatibleDC()
+    # get list of installed fonts from C:\Windows\Fonts
+    fontnames = os.listdir(".\\trainedFonts")
 
-    win32gui.EnumFontFamilies(dc.GetHandleOutput(), None, callback, fontnames)
 
     # Determine the size of the bitmap
     width = 60 * (ord('~') - ord(' '))
     height = 30 * len(fontnames)
 
-    # Create the bitmap
-    bm = win32ui.CreateBitmap()
-    bm.CreateCompatibleBitmap(dc, width, height)
-
-    dc.SelectObject(bm)
-
-    dc.FillSolidRect((0,0,width,height), 0xff)
-
-    im = Image.open("output.png")
+    im = Image.new("RGB", (width, height)) #, (255,255,255))
 
     row = 0
 
     for font in fontnames:
-    #    dc = drawFont(dc, font, row)
-       drawFontPil(im, font, row)
-       row += 1
+        if font.endswith(".ttf"):
+            drawFont(im, font, row)
+            
+            row += 1
+            # input()
 
-    # bmpinfo = bm.GetInfo()
-    # bmpstr = bm.GetBitmapBits(True)
-
-    # img = open("output.bmp", 'wb')
-    # img.write(bmpstr)
-    # img.close()
-
-    # im = Image.open(io.BytesIO(bmpstr))
-
-    # im = Image.frombytes(
-    #     '1',
-    #     (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
-    #     bmpstr
-    # )
-
+    
+    im.show()
     im.save("output.png")
 
 
