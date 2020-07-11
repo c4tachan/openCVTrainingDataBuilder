@@ -29,7 +29,7 @@ def drawFont(img, font, row):
 
     for c in range(ord('!'), (ord('~') + 1)):
         #draw.rectangle(((rc.l, rc.t), (rc.Right(), rc.Bottom())), fill="black")
-        draw.text((rc.l, rc.t), chr(c), font=fnt, align="center")
+        draw.text((rc.l + 10, rc.t), chr(c), font=fnt, align="right")
         rc.l = rc.Right()
 
     return
